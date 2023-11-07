@@ -1,34 +1,29 @@
 import tkinter as tk
 from tkinter import ttk
+from PIL import Image, ImageTk
+
 # Crear la ventana principal
 root = tk.Tk()
 root.title("EcoLimpio: Juntos por un Mundo más Limpio")
 
-# Obtener las dimensiones de la pantalla
-screen_width = root.winfo_screenwidth()
-screen_height = root.winfo_screenheight()
+# Cargar la imagen de fondo
+background_image = Image.open("logo.jpeg")
+background_photo = ImageTk.PhotoImage(background_image)
 
-# Definir las dimensiones de la ventana
-window_width = 800
-window_height = 500
+# Ajustar el tamaño de la ventana al tamaño de la imagen
+root.geometry(f'{background_photo.width()}x{background_photo.height()}')
 
-# Calcular la posición x e y para centrar la ventana
-center_x = int((screen_width - window_width) / 2)
-center_y = int((screen_height - window_height) / 2)
+# Crear un label que tendrá la imagen de fondo
+background_label = tk.Label(root, image=background_photo)
+background_label.place(x=0, y=0, relwidth=1, relheight=1)
 
-# Configurar la posición de la ventana en el centro de la pantalla
-root.geometry(f'{window_width}x{window_height}+{center_x}+{center_y}')
+# Crear dos botones y colocarlos sobre la imagen de fondo
+# Nota: Puedes ajustar los valores 'x' e 'y' según necesites para colocar los botones
+button_ecosalto = tk.Button(root, text="Ecosalto", bg='white', fg='black')
+button_ecosalto.place(x=50, y=250, width=120, height=30)  # Ejemplo de posición y tamaño
 
-# Crear un marco para contener los botones
-frame = ttk.Frame(root)
-frame.pack(expand=True)
-
-# Crear dos botones dentro del marco con los textos solicitados
-button_ecosalto = ttk.Button(frame, text="ecosalto")
-button_ecosalto.pack(side=tk.LEFT, padx=10, pady=10)
-
-button_oceanopuro = ttk.Button(frame, text="oceanopuro")
-button_oceanopuro.pack(side=tk.RIGHT, padx=10, pady=10)
+button_oceanopuro = tk.Button(root, text="Oceanopuro", bg='white', fg='black')
+button_oceanopuro.place(x=200, y=250, width=120, height=30)  # Ejemplo de posición y tamaño
 
 # Iniciar el bucle principal de Tkinter
 root.mainloop()
