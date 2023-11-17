@@ -23,15 +23,19 @@ y_coordenada = int((alto_pantalla - root.winfo_reqheight()) / 2)
 # Establecer las coordenadas de la ventana principal
 root.geometry("+{}+{}".format(x_coordenada-80, y_coordenada-150))
 
+# Antes de iniciar el juego
+pygame.mixer.init()
+jump_sound = pygame.mixer.Sound("jumpSound.mp3")  # Reemplaza "jump_sound.wav" con tu archivo de sonido
+jump_sound.set_volume(0.5)  # Ajusta el volumen según sea necesario
 
 # Función que inicia el juego
 def start_game():
+    # Inicializar Pygame antes de cualquier operación de sonido o música
     # Crear una nueva ventana para el juego
     game_window = tk.Toplevel(root)
     game_window.title("EcoSalto")
     # esto remueve el botón maximizar
     game_window.resizable(0,0)
-
 
     # Establecer las coordenadas de la ventana principal
     game_window.geometry("+{}+{}".format(x_coordenada-200, y_coordenada-150))
@@ -46,8 +50,6 @@ def start_game():
     )
     
     background = game_canvas.create_image(300, 200, image=background_image_jump)
-    
-    
     # Cargar y mostrar la imagen del dinosaurio y las bolsas de basura
     dino_image = ImageTk.PhotoImage(
         Image.open("dino-BEST.png")
@@ -64,7 +66,12 @@ def start_game():
     # Dibujar el dinosaurio y una bolsa de basura
     dino = game_canvas.create_image(65, 350, image=dino_image)
     trash = game_canvas.create_image(550, 365, image=trash_image)
-
+    # Inicializar Pygame antes de cualquier operación de sonido o música
+    pygame.mixer.init()
+    # Iniciar la música del nivel del juego
+    pygame.mixer.music.set_volume(0.5)
+    pygame.mixer.music.load("forest.mp3")
+    pygame.mixer.music.play(loops=-1) 
     # Variable de estado del juego
     global game_progress
     game_progress = False
@@ -77,17 +84,25 @@ def start_game():
     message_start = game_canvas.create_text(300, 200, text="Presiona la barra espaciadora para iniciar el juego",font=("Arial", 12, "bold"), fill="black", )
 
     #etiqueta puntaje
-    message_score = game_canvas.create_text(200, 50, text="MR.CHANGO ",font=("Arial", 12, "bold"), fill="black", )
+    #message_score = game_canvas.create_text(200, 50, text="MR.CHANGO ",font=("Arial", 12, "bold"), fill="black", )
     message_score = game_canvas.create_text(50, 50, text="Puntaje: ",font=("Arial", 12, "bold"), fill="black", )
     global score
     score = 0
     global text_score
     text_score = game_canvas.create_text(100, 50, text=score,font=("Arial", 12, "bold"), fill="black", )
+    message_score = game_canvas.create_text(50, 50, text="Puntaje: ",font=("Arial", 12, "bold"), fill="black", )
+    #Highscore
+    global high_score
+    high_score = 0
+    global texth_score
+    texth_score = game_canvas.create_text(500, 50, text=high_score,font=("Arial", 12, "bold"), fill="black", )
+    message_score = game_canvas.create_text(400, 50, text="Maximo Puntaje: ",font=("Arial", 12, "bold"), fill="black", )
     global distance
     def hay_colision(x_1, y_1, x_2, y_2):
         global distance
         distance = math.sqrt(math.pow(x_1 - x_2, 2) + math.pow(y_2 - y_1, 2))
-        if distance < 60:
+        #Hitbox de la basura
+        if distance <  39:
             return True
         else:
             return False
@@ -97,19 +112,27 @@ def start_game():
             
         
     # Función para mover la bolsa de basura y reiniciarla una vez que salga del canvas
+    
     def move_trash():
         global game_progress
         game_canvas.move(trash, -10, 0)
         if game_canvas.coords(trash)[0] < 0:
             game_canvas.coords(trash, 550, 365)
             global score
-            score = score+1
+            score = score + 1
             global text_score
             game_canvas.delete(text_score)
             text_score = game_canvas.create_text(100, 50, text=score,font=("Arial", 12, "bold"), fill="black", )
+        if game_canvas.coords(trash)[0] < 0:
+            game_canvas.coords(trash, 550, 365)
+            global high_score
+            high_score = high_score + 1
+            global texth_score
+            game_canvas.itemconfig(text_score)
         if game_progress:
             game_canvas.delete(message_start)
             game_window.after(30, move_trash)
+        #funcion high
              # Coordenadas actuales del dinosaurio
             dino_pos = game_canvas.coords(dino)
             # Coordenadas actuales de la bolsa de basura
@@ -122,7 +145,7 @@ def start_game():
                 game_progress = False
                 
                 global message_end, message_reset
-                message_end = game_canvas.create_text(300, 200, text="Fin del juego",font=("Arial", 12, "bold"), fill="black" )
+                message_end = game_canvas.create_text(300, 200, text="Game Over",font=("Helvetica", 24), fill="red" )
                 message_reset = game_canvas.create_text(300, 230, text="(Presiona la barra espaciadora para reiniciar el juego)",font=("Arial", 12, "bold"), fill="black", )
                 # Esperar a que el jugador presione la barra espaciadora para reiniciar
                 game_window.bind("<space>", reset_game)
@@ -138,6 +161,8 @@ def start_game():
         
         # Comenzar salto solo si el dinosaurio está en el suelo
         if pos[1] >= 350:
+            #Sonido de salto
+            jump_sound.play()
             # Mover el dinosaurio hacia arriba de manera gradual
             for i in range(10):
                 game_canvas.move(dino, 0, -20)
@@ -154,10 +179,12 @@ def start_game():
             game_canvas.move(dino, 0, 20)
             game_canvas.update()
             game_canvas.after(20)
-       
-    #funciona resetear todo
+    #funciona reset todo
     def reset_game(event):
         global game_progress, score,message_start
+        #detener musica
+        pygame.mixer.music.stop()
+
         score = 0
         # Reiniciar posición del dinosaurio
         game_canvas.coords(dino, 65, 350)
@@ -169,6 +196,11 @@ def start_game():
         game_canvas.delete(message_reset)
          # Reiniciar puntaje
         game_canvas.itemconfig(text_score, text=score)
+        game_canvas.itemconfig(texth_score, text=high_score)
+         # Iniciar la música del nivel del juego
+        pygame.mixer.music.set_volume(0.5)
+        pygame.mixer.music.load("forest.mp3")
+        pygame.mixer.music.play(loops=-1)
 
     # Asignar la tecla Espacio para saltar e iniciar
     
@@ -176,7 +208,6 @@ def start_game():
     
     # Mantener una referencia a las imágenes para evitar la recolección de basura
     background.images = {"dino": dino_image, "trash": trash_image}
-
 
      
 
