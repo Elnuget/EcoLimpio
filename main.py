@@ -316,58 +316,29 @@ def start_game2():
     global direccion_x_trash,direccion_y_trash,velocidad_trash,factor_tiempo_trash
     direccion_x_trash = -1
     direccion_y_trash = -1
-    velocidad_trash = 5
-    factor_tiempo_trash = 0.4
-    # Función para mover la basura
-    def move_trash():
-        global game_progress, score,text_score,trash,direccion_x_trash,direccion_y_trash,velocidad_trash,factor_tiempo_trash
-        if game_progress:
-            game_canvas.delete(message_start)
-            game_window.after(30, move_trash)
-            
-            # Coordenadas actuales de la basura
-            trash_pos = game_canvas.coords(trash)
-            
-            # Dirección actual de la basura (inicialmente hacia la derecha)
-            # Dirección aleatoria solo cuando la basura toca el borde
-            if trash_pos[1] - 40 <= 0 or trash_pos[1] + 40 >= 400 or trash_pos[0] - 60 <= 0 or trash_pos[0] + 40 >= 600:
-                opciones = [(1, 0), (-1, 0), (-1, -1),(1, 1)]
-                direccion_x_trash, direccion_y_trash = random.choice(opciones)
-
-            # Mover la basura en la dirección actual
-            game_canvas.coords(trash, trash_pos[0] + direccion_x_trash * velocidad_trash * factor_tiempo_trash, trash_pos[1] + direccion_y_trash * velocidad_trash * factor_tiempo_trash)
-            
-            # Coordenadas actuales del pez
-            fish_pos = game_canvas.coords(fish)
-
-            # Verificar colisión al inicio del salto
-            colision = hay_colision(fish_pos[0], fish_pos[1], trash_pos[0], trash_pos[1])
-
-            if colision:
-                eat = pygame.mixer.Sound("comer.mp3") 
-                eat.set_volume(0.5)  # Ajusta el volumen según sea necesario
-                eat.play()
-                game_progress = False
-                score = score+1
-                game_canvas.delete(text_score)
-                text_score = game_canvas.create_text(100, 50, text=score,font=("Arial", 12, "bold"), fill="black")
-                pos_trash()
+    velocidad_trash = 3
+    factor_tiempo_trash = 0.1
+    
+    
 
     #funcion mover fish          
-    def move_fish(event):
+    def move_fish(event=None):
         
-        global current_fish_image,fish,game_progress,reset_fish
-        
+        global current_fish_image, fish, game_progress, reset_fish
+
         if not game_progress:
-                game_progress = True
-                move_trash()  # Iniciar el movimiento de la bolsa de basura
-               
+            game_progress = True
+            move_trash()  # Iniciar el movimiento de la basura
+
+        # Solo proceder si el juego está en progreso y el pez debe resetearse
+        if not game_progress or not reset_fish:
+            return
         # Coordenadas actuales del dinosaurio
         pos = game_canvas.coords(fish)
         
         # Definir la velocidad del movimiento y el factor de tiempo
-        velocidad = 1
-        factor_tiempo = 0.1  # Puedes ajustar este valor según sea necesario
+        velocidad = 0.4
+        factor_tiempo = 0.2  # Puedes ajustar este valor según sea necesario
 
         # Inicializar la dirección del movimiento
         direccion_x = 0
@@ -428,12 +399,52 @@ def start_game2():
        
         game_canvas.after(5, lambda: resetFish(event))
 
-     
+    
+                
+    
     def resetFish(event):
         global reset_fish
         reset_fish = True   
+
+        # Función para mover la basura
+    def move_trash():
+        global game_progress, score, text_score, trash, direccion_x_trash, direccion_y_trash, velocidad_trash, factor_tiempo_trash, reset_fish
+        if game_progress:
+            game_canvas.delete(message_start)
+            game_window.after(30, move_trash)
+            
+            # Coordenadas actuales de la basura
+            trash_pos = game_canvas.coords(trash)
+            
+            # Dirección actual de la basura (inicialmente hacia la derecha)
+            # Dirección aleatoria solo cuando la basura toca el borde
+            if trash_pos[1] - 40 <= 0 or trash_pos[1] + 40 >= 400 or trash_pos[0] - 60 <= 0 or trash_pos[0] + 40 >= 600:
+                opciones = [(1, 0), (-1, 0), (-1, -1),(1, 1)]
+                direccion_x_trash, direccion_y_trash = random.choice(opciones)
+
+            # Mover la basura en la dirección actual
+            game_canvas.coords(trash, trash_pos[0] + direccion_x_trash * velocidad_trash * factor_tiempo_trash, trash_pos[1] + direccion_y_trash * velocidad_trash * factor_tiempo_trash)
+            
+            # Coordenadas actuales del pez
+            fish_pos = game_canvas.coords(fish)
+
+            # Verificar colisión al inicio del salto
+            colision = hay_colision(fish_pos[0], fish_pos[1], trash_pos[0], trash_pos[1])
+
+            if colision:
+                eat = pygame.mixer.Sound("comer.mp3") 
+                eat.set_volume(0.5)  # Ajusta el volumen según sea necesario
+                eat.play()
+                game_progress = False
+                score = score+1
+                game_canvas.delete(text_score)
+                text_score = game_canvas.create_text(100, 50, text=score,font=("Arial", 12, "bold"), fill="black")
+                pos_trash()
+                
+                
         
 
+    
     # Asociar la función move_fish con el evento de tecla
     game_canvas.focus_set()
     
